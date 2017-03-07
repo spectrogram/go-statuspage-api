@@ -63,15 +63,6 @@ type NewIncident struct {
 }
 
 func (i *NewIncident) String() string {
-	/*
-		str := "incident[name]=" + i.Name
-		str += "incident[status]=" + i.Status
-		str += "incident[wants_twitter_update]=false"
-		str += "incident[message]=" + i.Message
-		str += "incident[impact_override]=" + i.ImpactOverride
-		str += "incident[component_ids][]=" + i.ComponentIDs[0]
-		return str
-	*/
 	return encodeParams(map[string]interface{}{
 		"incident[name]":                 i.Name,
 		"incident[status]":               i.Status,
