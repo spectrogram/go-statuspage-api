@@ -1,12 +1,13 @@
 package statuspage
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 	"time"
 )
 
-const DefaultAPIURL = "https://api.statuspage.io/v2/"
+const DefaultAPIURL = "https://api.statuspage.io/v2/pages/"
 
 type Client struct {
 	apiKey     string
@@ -15,15 +16,16 @@ type Client struct {
 	url        *url.URL
 }
 
-func NewClient(apiKey, pageID string) *Client {
-	u, err := url.Parse(DefaultAPIURL)
+func NewClient(apiKey, pageID string) (*Client, error) {
+	u, err := url.Parse(DefaultAPIURL + pageID + "/")
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("url error parsing (%s): %s", pageID, err)
 	}
-	return &Client{
+	c := Client{
 		apiKey:     apiKey,
 		pageID:     pageID,
 		httpClient: &http.Client{Timeout: 5 * time.Second},
 		url:        u,
 	}
+	return &c, nil
 }

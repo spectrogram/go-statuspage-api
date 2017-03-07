@@ -56,14 +56,27 @@ type Incident struct {
 	UpdatedAt                     *time.Time        `json:updated_at,omitempty"`
 }
 
-func (c *Client) GetIncidents() ([]Incident, error) {
-	resp := &struct {
-		Offset *int
-		Limit  *int
-		Total  *int
-		Data   []Incident
-	}{}
-	path := "pages/" + c.pageID + "/incidents.json"
+type IncidentResponse struct {
+	Offset *int       `json:"offset,omitempty"`
+	Limit  *int       `json:"limit,omitempty"`
+	Total  *int       `json:"total,omitempty"`
+	Data   []Incident `json:"data,omitempty"`
+}
+
+// TODO: Paging
+func (c *Client) GetAllIncidents() ([]Incident, error) {
+	resp := &IncidentResponse{}
+	path := "incidents.json"
+	err := c.doGet(path, nil, resp)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Data, nil
+}
+
+func (c *Client) GetOpenIncidents() ([]Incident, error) {
+	resp := &IncidentResponse{}
+	path := "incidents/unresolved.json"
 	err := c.doGet(path, nil, resp)
 	if err != nil {
 		return nil, err
