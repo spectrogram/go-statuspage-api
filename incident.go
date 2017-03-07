@@ -73,6 +73,29 @@ func (i *NewIncident) String() string {
 	})
 }
 
+type ScheduledIncident struct {
+	Name               string
+	Status             string
+	ScheduledFor       time.Time
+	ScheduledUntil     time.Time
+	WantsTwitterUpdate bool
+	ImpactOverride     string
+	Message            string
+	ComponentIDs       []string
+}
+
+func (i *ScheduledIncident) String() string {
+	return encodeParams(map[string]interface{}{
+		"incident[name]":                 i.Name,
+		"incident[status]":               i.Status,
+		"incident[scheduled_for]":        i.ScheduledFor,
+		"incident[scheduled_until]":      i.ScheduledUntil,
+		"incident[wants_twitter_update]": i.WantsTwitterUpdate,
+		"incident[message]":              i.Message,
+		"incident[component]":            i.ComponentIDs,
+	})
+}
+
 // TODO: Paging
 func (c *Client) doGetIncidents(path string) ([]Incident, error) {
 	resp := &IncidentResponse{}
@@ -95,7 +118,7 @@ func (c *Client) GetScheduledIncidents() ([]Incident, error) {
 	return c.doGetIncidents("incidents/scheduled.json")
 }
 
-func (c *Client) CreateIncident(name, status, message, component string) ([]Incident, error) {
+func (c *Client) CreateIncident(name, status, message, component string) (*Incident, error) {
 	switch status {
 	case "investigating", "identified", "monitoring", "resolved":
 		break
@@ -119,6 +142,28 @@ func (c *Client) CreateIncident(name, status, message, component string) ([]Inci
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(i)
-	return nil, nil
+	return i, nil
+}
+
+func (c *Client) ScheduleIncident(name, start, end, message, remind, autoInProgress, autoComplete, component) (*Incident, error) {
+	cp, err := c.GetComponentByName(component)
+	if err != nil {
+		return nil, err
+	}
+	i := &ScheduledIncident{
+		Name:               name,
+		Status:             "scheduled",
+		ScheduledFor:       start,
+		ScheduledUntil:     end,
+		WantsTwitterUpdate: false,
+		ImpactOverride:     "none",
+		Message:            message,
+		ComponentIDs:       []string{*cp.ID},
+	}
+	resp := &IncidentResponse{}
+	err = c.doPost("incidents.json", i, resp)
+	if err != nil {
+		return nil, err
+	}
+	return i, nil
 }
