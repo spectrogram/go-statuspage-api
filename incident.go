@@ -1,19 +1,9 @@
 package statuspage
 
 import (
+	"fmt"
 	"time"
 )
-
-type Component struct {
-	CreatedAt   *time.Time `json:"created_at,omitempty"`
-	Description *string    `json:"description,omitempty"`
-	ID          *string    `json:"id,omitempty"`
-	Name        *string    `json:"name,omitempty"`
-	PageID      *string    `json:"page_id,omitempty"`
-	Position    *int       `json:"position,omitempty"`
-	Status      *string    `json:"status,omitempty"`
-	UpdatedAt   *time.Time `json:"updated_at,omitempty"`
-}
 
 type IncidentUpdate struct {
 	Body               *string    `json:"body,omitempty"`
@@ -63,10 +53,38 @@ type IncidentResponse struct {
 	Data   []Incident `json:"data,omitempty"`
 }
 
+type NewIncident struct {
+	Name               string
+	Status             string
+	Message            string
+	WantsTwitterUpdate bool
+	ImpactOverride     string
+	ComponentIDs       []string
+}
+
+func (i *NewIncident) String() string {
+	/*
+		str := "incident[name]=" + i.Name
+		str += "incident[status]=" + i.Status
+		str += "incident[wants_twitter_update]=false"
+		str += "incident[message]=" + i.Message
+		str += "incident[impact_override]=" + i.ImpactOverride
+		str += "incident[component_ids][]=" + i.ComponentIDs[0]
+		return str
+	*/
+	return encodeParams(map[string]interface{}{
+		"incident[name]":                 i.Name,
+		"incident[status]":               i.Status,
+		"incident[wants_twitter_update]": i.WantsTwitterUpdate,
+		"incident[message]":              i.Message,
+		"incident[impact_override]":      i.ImpactOverride,
+		"incident[component_ids][]":      i.ComponentIDs,
+	})
+}
+
 // TODO: Paging
-func (c *Client) GetAllIncidents() ([]Incident, error) {
+func (c *Client) doGetIncidents(path string) ([]Incident, error) {
 	resp := &IncidentResponse{}
-	path := "incidents.json"
 	err := c.doGet(path, nil, resp)
 	if err != nil {
 		return nil, err
@@ -74,12 +92,42 @@ func (c *Client) GetAllIncidents() ([]Incident, error) {
 	return resp.Data, nil
 }
 
+func (c *Client) GetAllIncidents() ([]Incident, error) {
+	return c.doGetIncidents("incidents.json")
+}
+
 func (c *Client) GetOpenIncidents() ([]Incident, error) {
-	resp := &IncidentResponse{}
-	path := "incidents/unresolved.json"
-	err := c.doGet(path, nil, resp)
+	return c.doGetIncidents("incidents/unresolved.json")
+}
+
+func (c *Client) GetScheduledIncidents() ([]Incident, error) {
+	return c.doGetIncidents("incidents/scheduled.json")
+}
+
+func (c *Client) CreateIncident(name, status, message, component string) ([]Incident, error) {
+	switch status {
+	case "investigating", "identified", "monitoring", "resolved":
+		break
+	default:
+		return nil, fmt.Errorf("create error: status not (investigating|identified|monitoring|resolved), got %s", status)
+	}
+	cp, err := c.GetComponentByName(component)
 	if err != nil {
 		return nil, err
 	}
-	return resp.Data, nil
+	i := &NewIncident{
+		Name:               name,
+		Status:             status,
+		Message:            message,
+		WantsTwitterUpdate: false,
+		ImpactOverride:     "none",
+		ComponentIDs:       []string{*cp.ID},
+	}
+	resp := &IncidentResponse{}
+	err = c.doPost("incidents.json", i, resp)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(i)
+	return nil, nil
 }

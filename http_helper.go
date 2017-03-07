@@ -12,17 +12,26 @@ import (
 )
 
 func (c *Client) doGet(path string, params fmt.Stringer, out interface{}) error {
+	return c.doHTTP("GET", path, params, out)
+}
+
+func (c *Client) doPost(path string, params fmt.Stringer, out interface{}) error {
+	return c.doHTTP("POST", path, params, out)
+}
+
+func (c *Client) doHTTP(method, path string, params fmt.Stringer, out interface{}) error {
 	var s string
 	if params != nil {
 		s = params.String()
 	}
 	r := strings.NewReader(s)
-	req, err := http.NewRequest("GET", c.url.String()+path, r)
+	req, err := http.NewRequest(method, c.url.String()+path, r)
 	if err != nil {
 		return err
 	}
 	o := "Oauth " + c.apiKey
 	req.Header.Add("Authorization", o)
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	return c.doRequest(req, out)
 }
 
@@ -36,7 +45,7 @@ func (c *Client) doRequest(req *http.Request, out interface{}) error {
 	if err != nil {
 		return err
 	}
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != 200 && resp.StatusCode != 201 {
 		return fmt.Errorf("http error (%s): %s", resp.Status, b)
 	}
 	if len(b) == 0 {
@@ -49,7 +58,7 @@ func (c *Client) doRequest(req *http.Request, out interface{}) error {
 	return nil
 }
 
-func encodeGetParams(params map[string]interface{}) string {
+func encodeParams(params map[string]interface{}) string {
 	s := url.Values{}
 	for k, v := range params {
 		switch v.(type) {
@@ -66,8 +75,8 @@ func encodeGetParams(params map[string]interface{}) string {
 			}
 		case []string:
 			val := v.([]string)
-			if len(val) != 0 {
-				s.Add(k, strings.Join(val, ","))
+			for _, v := range val {
+				s.Add(k, v)
 			}
 		case []int:
 			val := v.([]int)
