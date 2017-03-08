@@ -19,6 +19,13 @@ func (c *Client) doPost(path string, params fmt.Stringer, out interface{}) error
 	return c.doHTTP("POST", path, params, out)
 }
 
+func (c *Client) doPatch(path string, params fmt.Stringer, out interface{}) error {
+	return c.doHTTP("PATCH", path, params, out)
+}
+
+func (c *Client) doDelete(path string, params fmt.Stringer, out interface{}) error {
+	return c.doHTTP("DELETE", path, params, out)
+}
 func (c *Client) doHTTP(method, path string, params fmt.Stringer, out interface{}) error {
 	var s string
 	if params != nil {

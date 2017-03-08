@@ -92,7 +92,43 @@ func (i *ScheduledIncident) String() string {
 		"incident[scheduled_until]":      i.ScheduledUntil,
 		"incident[wants_twitter_update]": i.WantsTwitterUpdate,
 		"incident[message]":              i.Message,
-		"incident[component]":            i.ComponentIDs,
+		"incident[component_ids][]":      i.ComponentIDs,
+	})
+}
+
+type HistoricIncident struct {
+	Name         string
+	Backfilled   bool
+	BackfillDate string
+	Message      string
+}
+
+func (i *HistoricIncident) String() string {
+	return encodeParams(map[string]interface{}{
+		"incident[name]":          i.Name,
+		"incident[backfilled]":    i.Backfilled,
+		"incident[backfill_date]": i.BackfillDate,
+		"incident[message]":       i.Message,
+	})
+}
+
+type NewIncidentUpdate struct {
+	Name               string
+	Status             string
+	Message            string
+	WantsTwitterUpdate bool
+	ImpactOverride     string
+	ComponentIDs       []string
+}
+
+func (i *NewIncidentUpdate) String() string {
+	return encodeParams(map[string]interface{}{
+		"incident[name]":                 i.Name,
+		"incident[status]":               i.Status,
+		"incident[message]":              i.Message,
+		"incident[wants_twitter_update]": i.WantsTwitterUpdate,
+		"incident[impact_override]":      i.ImpactOverride,
+		"incident[component_ids]":        i.ComponentIDs,
 	})
 }
 
@@ -118,7 +154,7 @@ func (c *Client) GetScheduledIncidents() ([]Incident, error) {
 	return c.doGetIncidents("incidents/scheduled.json")
 }
 
-func (c *Client) CreateIncident(name, status, message, component string) (*Incident, error) {
+func (c *Client) CreateIncident(component, name, message, status string) (*Incident, error) {
 	switch status {
 	case "investigating", "identified", "monitoring", "resolved":
 		break
@@ -137,15 +173,15 @@ func (c *Client) CreateIncident(name, status, message, component string) (*Incid
 		ImpactOverride:     "none",
 		ComponentIDs:       []string{*cp.ID},
 	}
-	resp := &IncidentResponse{}
+	resp := &Incident{}
 	err = c.doPost("incidents.json", i, resp)
 	if err != nil {
 		return nil, err
 	}
-	return i, nil
+	return resp, nil
 }
 
-func (c *Client) ScheduleIncident(name, start, end, message, remind, autoInProgress, autoComplete, component) (*Incident, error) {
+func (c *Client) ScheduleIncident(component, name, message string, start, end time.Time, remind, autoInProgress, autoComplete bool) ([]Incident, error) {
 	cp, err := c.GetComponentByName(component)
 	if err != nil {
 		return nil, err
@@ -165,5 +201,48 @@ func (c *Client) ScheduleIncident(name, start, end, message, remind, autoInProgr
 	if err != nil {
 		return nil, err
 	}
-	return i, nil
+	return resp.Data, nil
+}
+
+func (c *Client) CreateHistoricIncident(name, message string, date time.Time) ([]Incident, error) {
+	i := &HistoricIncident{
+		Name:         name,
+		Message:      message,
+		Backfilled:   true,
+		BackfillDate: date.Format("2006-01-02"),
+	}
+	resp := &IncidentResponse{}
+	err := c.doPost("incidents.json", i, resp)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Data, nil
+}
+
+// UpdateIncident updates an incident. If Status and/or Message are different,
+// a new update will be published for the incident. Each change will add an
+// update notification, so updates should be batched.
+func (c *Client) UpdateIncident(incident *Incident, name, status, message string) (*Incident, error) {
+	path := "incidents/" + *incident.ID + ".json"
+	u := &NewIncidentUpdate{
+		Name:    name,
+		Status:  status,
+		Message: message,
+	}
+	resp := &Incident{}
+	err := c.doPatch(path, u, resp)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (c *Client) DeleteIncident(incident *Incident) (*Incident, error) {
+	path := "incidents/" + *incident.ID + ".json"
+	resp := &Incident{}
+	err := c.doDelete(path, nil, resp)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
 }
