@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-const DefaultAPIURL = "https://api.statuspage.io/v2/pages/"
+const DefaultAPIURL = "https://api.statuspage.io/v1/pages/"
 
 type Client struct {
 	apiKey     string

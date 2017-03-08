@@ -46,12 +46,7 @@ type Incident struct {
 	UpdatedAt                     *time.Time        `json:updated_at,omitempty"`
 }
 
-type IncidentResponse struct {
-	Offset *int       `json:"offset,omitempty"`
-	Limit  *int       `json:"limit,omitempty"`
-	Total  *int       `json:"total,omitempty"`
-	Data   []Incident `json:"data,omitempty"`
-}
+type IncidentResponse []Incident
 
 type NewIncident struct {
 	Name               string
@@ -74,25 +69,31 @@ func (i *NewIncident) String() string {
 }
 
 type ScheduledIncident struct {
-	Name               string
-	Status             string
-	ScheduledFor       time.Time
-	ScheduledUntil     time.Time
-	WantsTwitterUpdate bool
-	ImpactOverride     string
-	Message            string
-	ComponentIDs       []string
+	Name                    string
+	Status                  string
+	ScheduledFor            time.Time
+	ScheduledUntil          time.Time
+	WantsTwitterUpdate      bool
+	ScheduledRemindPrior    bool
+	ScheduledAutoInProgress bool
+	ScheduledAutoCompleted  bool
+	ImpactOverride          string
+	Message                 string
+	ComponentIDs            []string
 }
 
 func (i *ScheduledIncident) String() string {
 	return encodeParams(map[string]interface{}{
-		"incident[name]":                 i.Name,
-		"incident[status]":               i.Status,
-		"incident[scheduled_for]":        i.ScheduledFor,
-		"incident[scheduled_until]":      i.ScheduledUntil,
-		"incident[wants_twitter_update]": i.WantsTwitterUpdate,
-		"incident[message]":              i.Message,
-		"incident[component_ids][]":      i.ComponentIDs,
+		"incident[name]":                       i.Name,
+		"incident[status]":                     i.Status,
+		"incident[scheduled_for]":              i.ScheduledFor,
+		"incident[scheduled_until]":            i.ScheduledUntil,
+		"incident[wants_twitter_update]":       i.WantsTwitterUpdate,
+		"incident[scheduled_remind_prior]":     i.ScheduledRemindPrior,
+		"incident[scheduled_auto_in_progress]": i.ScheduledAutoInProgress,
+		"incident[scheduled_auto_completed]":   i.ScheduledAutoCompleted,
+		"incident[message]":                    i.Message,
+		"incident[component_ids][]":            i.ComponentIDs,
 	})
 }
 
@@ -134,12 +135,12 @@ func (i *NewIncidentUpdate) String() string {
 
 // TODO: Paging
 func (c *Client) doGetIncidents(path string) ([]Incident, error) {
-	resp := &IncidentResponse{}
-	err := c.doGet(path, nil, resp)
+	resp := IncidentResponse{}
+	err := c.doGet(path, nil, &resp)
 	if err != nil {
 		return nil, err
 	}
-	return resp.Data, nil
+	return resp, nil
 }
 
 func (c *Client) GetAllIncidents() ([]Incident, error) {
@@ -181,42 +182,45 @@ func (c *Client) CreateIncident(component, name, message, status string) (*Incid
 	return resp, nil
 }
 
-func (c *Client) ScheduleIncident(component, name, message string, start, end time.Time, remind, autoInProgress, autoComplete bool) ([]Incident, error) {
+func (c *Client) ScheduleIncident(component, name, message string, start, end time.Time, remind, autoInProgress, autoComplete bool) (*Incident, error) {
 	cp, err := c.GetComponentByName(component)
 	if err != nil {
 		return nil, err
 	}
 	i := &ScheduledIncident{
-		Name:               name,
-		Status:             "scheduled",
-		ScheduledFor:       start,
-		ScheduledUntil:     end,
-		WantsTwitterUpdate: false,
-		ImpactOverride:     "none",
-		Message:            message,
-		ComponentIDs:       []string{*cp.ID},
+		Name:                    name,
+		Status:                  "scheduled",
+		ScheduledFor:            start,
+		ScheduledUntil:          end,
+		WantsTwitterUpdate:      false,
+		ScheduledRemindPrior:    remind,
+		ScheduledAutoInProgress: autoInProgress,
+		ScheduledAutoCompleted:  autoComplete,
+		ImpactOverride:          "none",
+		Message:                 message,
+		ComponentIDs:            []string{*cp.ID},
 	}
-	resp := &IncidentResponse{}
+	resp := &Incident{}
 	err = c.doPost("incidents.json", i, resp)
 	if err != nil {
 		return nil, err
 	}
-	return resp.Data, nil
+	return resp, nil
 }
 
-func (c *Client) CreateHistoricIncident(name, message string, date time.Time) ([]Incident, error) {
+func (c *Client) CreateHistoricIncident(name, message string, date time.Time) (*Incident, error) {
 	i := &HistoricIncident{
 		Name:         name,
 		Message:      message,
 		Backfilled:   true,
 		BackfillDate: date.Format("2006-01-02"),
 	}
-	resp := &IncidentResponse{}
+	resp := &Incident{}
 	err := c.doPost("incidents.json", i, resp)
 	if err != nil {
 		return nil, err
 	}
-	return resp.Data, nil
+	return resp, nil
 }
 
 // UpdateIncident updates an incident. If Status and/or Message are different,

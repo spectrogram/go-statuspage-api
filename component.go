@@ -3,6 +3,8 @@ package statuspage
 import (
 	"fmt"
 	"time"
+
+	"github.com/kr/pretty"
 )
 
 type Component struct {
@@ -14,23 +16,19 @@ type Component struct {
 	Position    *int       `json:"position,omitempty"`
 	Status      *string    `json:"status,omitempty"`
 	UpdatedAt   *time.Time `json:"updated_at,omitempty"`
+	GroupID     *string    `json:"group_id,omitempty"`
 }
 
-type ComponentResponse struct {
-	Offset *int        `json:"offset,omitempty"`
-	Limit  *int        `json:"limit,omitempty"`
-	Total  *int        `json:"total,omitempty"`
-	Data   []Component `json:"data,omitempty"`
-}
+type ComponentResponse []Component
 
-// TODO: Paging
 func (c *Client) doGetComponents(path string) ([]Component, error) {
-	resp := &ComponentResponse{}
-	err := c.doGet(path, nil, resp)
+	resp := ComponentResponse{}
+	err := c.doGet(path, nil, &resp)
 	if err != nil {
 		return nil, err
 	}
-	return resp.Data, nil
+	pretty.Println(resp)
+	return resp, nil
 }
 
 func (c *Client) GetAllComponents() ([]Component, error) {
