@@ -26,6 +26,7 @@ func (c *Client) doPatch(path string, params fmt.Stringer, out interface{}) erro
 func (c *Client) doDelete(path string, params fmt.Stringer, out interface{}) error {
 	return c.doHTTP("DELETE", path, params, out)
 }
+
 func (c *Client) doHTTP(method, path string, params fmt.Stringer, out interface{}) error {
 	var s string
 	if params != nil {
