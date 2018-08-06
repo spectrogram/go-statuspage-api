@@ -16,6 +16,7 @@ type Component struct {
 	Status      *string    `json:"status,omitempty"`
 	UpdatedAt   *time.Time `json:"updated_at,omitempty"`
 	GroupID     *string    `json:"group_id,omitempty"`
+	Showcase	*bool	   `json:"showcase,omitempty"`
 }
 
 func (c *Component) String() string {
@@ -38,6 +39,22 @@ type ComponentUpdateData struct {
 
 func (c *ComponentUpdateData) String() string {
 	return c.Data
+}
+
+type ComponentCreateData struct {
+	Name		string
+	Description	string
+	GroupID		string
+	Showcase	bool
+}
+
+func (c *ComponentCreateData) String() string {
+	return encodeParams(map[string]interface{}{
+		"component[name]":                c.Name,
+		"component[description]":         c.Description,
+		"component[group_id]": 		      c.GroupID,
+		"component[showcase]":            c.Showcase,
+	})
 }
 
 type ComponentsResponse []Component
@@ -121,4 +138,29 @@ func (c *Client) UpdateComponentStatus(comp *Component) (*Component, error) {
 
 func (c *Client) UpdateComponentDesc(comp *Component) (*Component, error) {
 	return c.updateComponent(comp, "description")
+}
+
+func (c *Client) doCreateComponent(path string, comp *ComponentCreateData) (*Component, error) {
+	resp := Component{}
+	err := c.doPost(path, comp, resp)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+func (c *Client) CreateComponent(comp *ComponentCreateData) (*Component, error) {
+	return c.doCreateComponent("components.json", comp)
+}
+
+// DeleteComponent deletes a component.
+// As per the API docs, this endpoint only returns 204 on successful deletion -
+// it does not return data.
+func (c *Client) DeleteComponent(comp *Component) (error) {
+	path := "components/" + *comp.ID + ".json"
+	err := c.doDelete(path, nil, nil)
+	if err != nil {
+		return err
+	}
+	return nil
 }

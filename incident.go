@@ -41,9 +41,9 @@ type Incident struct {
 	ScheduledRemindPrior          *bool             `json:"scheduled_remind_prior,omitempty"`
 	ScheduledRemindedAt           *time.Time        `json:"scheduled_reminded_at,omitempty"`
 	ScheduledUntil                *time.Time        `json:"scheduled_until,omitempty"`
-	Shortlink                     *string           `json:shortlink,omitempty"`
-	Status                        *string           `json:status,omitempty"`
-	UpdatedAt                     *time.Time        `json:updated_at,omitempty"`
+	Shortlink                     *string           `json:"shortlink,omitempty"`
+	Status                        *string           `json:"status,omitempty"`
+	UpdatedAt                     *time.Time        `json:"updated_at,omitempty"`
 }
 
 type IncidentResponse []Incident
