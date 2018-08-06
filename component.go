@@ -16,7 +16,7 @@ type Component struct {
 	Status      *string    `json:"status,omitempty"`
 	UpdatedAt   *time.Time `json:"updated_at,omitempty"`
 	GroupID     *string    `json:"group_id,omitempty"`
-	Showcase	*bool	   `json:"showcase,omitempty"`
+	Showcase    *bool      `json:"showcase,omitempty"`
 }
 
 func (c *Component) String() string {
@@ -52,7 +52,7 @@ func (c *ComponentCreateData) String() string {
 	return encodeParams(map[string]interface{}{
 		"component[name]":                c.Name,
 		"component[description]":         c.Description,
-		"component[group_id]": 		      c.GroupID,
+		"component[group_id]": 	          c.GroupID,
 		"component[showcase]":            c.Showcase,
 	})
 }
