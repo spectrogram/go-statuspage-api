@@ -20,9 +20,10 @@ type ComponentGroupsResponse []ComponentGroup
 func (c *ComponentGroup) String() string {
 	var out string
 	line := "================="
-	out = fmt.Sprintf("\n%s\nCreated: %s\nName: %s\nID: %s\nComponents: %v\n%s\n",
+	out = fmt.Sprintf("\n%s\nCreated: %s\nPosition: %d\nName: %s\nID: %s\nComponents: %v\n%s\n",
 		line,
 		*c.CreatedAt,
+        *c.Position,
 		*c.Name,
 		*c.ID,
 		c.Components,
