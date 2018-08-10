@@ -23,6 +23,10 @@ func (c *Client) doPatch(path string, params fmt.Stringer, out interface{}) erro
 	return c.doHTTP("PATCH", path, params, out)
 }
 
+func (c *Client) doPut(path string, params fmt.Stringer, out interface{}) error {
+	return c.doHTTP("PUT", path, params, out)
+}
+
 func (c *Client) doDelete(path string, params fmt.Stringer, out interface{}) error {
 	return c.doHTTP("DELETE", path, params, out)
 }
