@@ -61,4 +61,14 @@ func DeleteComponentGroup() {
 }
 ```
 
+### Integration testing
+Create a file named `.client-testing.json` containing your StatusPage API key and page ID. It should look something like this:
+
+```json
+{
+  "apiKey": "foobar",
+  "pageID": "blahblah"
+}
+```
+
 Things are still in progress.

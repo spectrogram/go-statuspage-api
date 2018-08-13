@@ -22,3 +22,6 @@ _testmain.go
 *.exe
 *.test
 *.prof
+
+# Contains client credentials for integration testing
+.client-testing.json

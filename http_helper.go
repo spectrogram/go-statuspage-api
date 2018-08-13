@@ -57,7 +57,7 @@ func (c *Client) doRequest(req *http.Request, out interface{}) error {
 	if err != nil {
 		return err
 	}
-	if resp.StatusCode != 200 && resp.StatusCode != 201 {
+	if resp.StatusCode != 200 && resp.StatusCode != 201 && resp.StatusCode != 204 {
 		return fmt.Errorf("http error (%s): %s", resp.Status, b)
 	}
 	if len(b) == 0 {
