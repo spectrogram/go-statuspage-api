@@ -5,6 +5,7 @@ import (
 	"fmt"
 )
 
+// ComponentGroup contains the data for a component group
 type ComponentGroup struct {
 	CreatedAt   *time.Time  `json:"created_at,omitempty"`
 	Description *string     `json:"description,omitempty"`
@@ -15,28 +16,31 @@ type ComponentGroup struct {
 	Components  []string    `json:"components,omitempty"`
 }
 
-type ComponentGroupsResponse []ComponentGroup
-
 func (c *ComponentGroup) String() string {
-	var out string
-	line := "================="
-	out = fmt.Sprintf("\n%s\nCreated: %s\nPosition: %d\nName: %s\nID: %s\nComponents: %v\n%s\n",
-		line,
-		*c.CreatedAt,
+    var out string
+    line := "================="
+    out = fmt.Sprintf("\n%s\nCreated: %s\nPosition: %d\nName: %s\nID: %s\nComponents: %v\n%s\n",
+        line,
+        *c.CreatedAt,
         *c.Position,
-		*c.Name,
-		*c.ID,
-		c.Components,
-		line,
-	)
-	return out
+        *c.Name,
+        *c.ID,
+        c.Components,
+        line,
+    )
+    return out
 }
 
+// ComponentGroupsResponse is a slice of ComponentGroups
+// The StatusPage API will return a list of ComponentGroups when querying for all component groups
+type ComponentGroupsResponse []ComponentGroup
+
+// ComponentGroupCreateData contains the data required to create a new component group
+// The list of components cannot be empty.
 type ComponentGroupCreateData struct {
     Name        string
     Components  []string
 }
-
 
 // The StatusPage API expects that URL-encoded arrays have [] appended to the value name,
 // hence the extra [] for the components slice.

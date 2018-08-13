@@ -37,7 +37,7 @@ func setup() {
 }
 
 func TestClient_CreateComponentGroup(t *testing.T) {
-    // Component groups must be create with components in them
+    // Component groups must be created with components in them
     // We will create a dummy Component
     var newComp ComponentCreateData = ComponentCreateData{
         Name: "StatusPage API Client Test Component (Group)",

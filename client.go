@@ -7,8 +7,11 @@ import (
 	"time"
 )
 
+// DefaultAPIURL should be the current URL prefix as described in the docs:
+// https://doers.statuspage.io/api/basics/
 const DefaultAPIURL = "https://api.statuspage.io/v1/pages/"
 
+// Client contains the information needed to find and consume the StatusPage API
 type Client struct {
 	apiKey     string
 	pageID     string
@@ -16,6 +19,9 @@ type Client struct {
 	url        *url.URL
 }
 
+// NewClient creates a new Client from a StatusPage API key and page ID
+// See https://doers.statuspage.io/api/authentication/ on how to obtain
+// an API key.
 func NewClient(apiKey, pageID string) (*Client, error) {
 	u, err := url.Parse(DefaultAPIURL + pageID + "/")
 	if err != nil {
