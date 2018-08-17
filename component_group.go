@@ -52,10 +52,12 @@ func (c *ComponentGroupCreateData) String() string {
     })
 }
 
+// GetAllComponentGroups gets all component groups on the page
 func (c *Client) GetAllComponentGroups() ([]ComponentGroup, error) {
 	return c.doGetComponentGroups("component-groups.json")
 }
 
+// GetComponentGroupByID returns a component group with the specified ID
 func (c *Client) GetComponentGroupByID(id string) (*ComponentGroup, error) {
     cgs, err := c.GetAllComponentGroups()
     if err != nil {
@@ -69,6 +71,7 @@ func (c *Client) GetComponentGroupByID(id string) (*ComponentGroup, error) {
     return nil, fmt.Errorf("search error: Component group with ID %s not found", id)
 }
 
+// GetComponentGroupByName returns the first component group with the specified name
 func (c *Client) GetComponentGroupByName(name string) (*ComponentGroup, error) {
     cgs, err := c.GetAllComponentGroups()
     if err != nil {
@@ -100,6 +103,7 @@ func (c *Client) doCreateComponentGroup(path string, group *ComponentGroupCreate
     return &resp, nil
 }
 
+// CreateComponentGroup creates a component group with the data contained in a ComponentGroupCreateData struct
 func (c *Client) CreateComponentGroup(group *ComponentGroupCreateData) (*ComponentGroup, error) {
     return c.doCreateComponentGroup("component-groups.json", group)
 }
@@ -126,8 +130,8 @@ func (c *Client) updateComponentGroup(group *ComponentGroup) (*ComponentGroup, e
     return ucg, nil
 }
 
-// Updates a component group. Expects a complete ComponentGroup struct - consider using
-// one of the GetComponentGroup helper functions.
+// UpdateComponentGroup updates a component group. Expects a complete ComponentGroup struct -
+// consider using one of the GetComponentGroup helper functions.
 func (c *Client) UpdateComponentGroup(group *ComponentGroup) (*ComponentGroup, error) {
     return c.updateComponentGroup(group)
 }
