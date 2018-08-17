@@ -19,9 +19,10 @@ type ComponentGroup struct {
 func (c *ComponentGroup) String() string {
     var out string
     line := "================="
-    out = fmt.Sprintf("\n%s\nCreated: %s\nPosition: %d\nName: %s\nID: %s\nComponents: %v\n%s\n",
+    out = fmt.Sprintf("\n%s\nCreated: %s\nUpdated: %s\nPosition: %d\nName: %s\nID: %s\nComponents: %v\n%s\n",
         line,
         *c.CreatedAt,
+        *c.UpdatedAt,
         *c.Position,
         *c.Name,
         *c.ID,
@@ -94,18 +95,19 @@ func (c *Client) doGetComponentGroups(path string) ([]ComponentGroup, error) {
 	return resp, nil
 }
 
-func (c *Client) doCreateComponentGroup(path string, group *ComponentGroupCreateData) (*ComponentGroup, error) {
+// CreateComponentGroup creates a component group with the data contained in a ComponentGroupCreateData struct
+func (c *Client) CreateComponentGroup(name string, components []string) (*ComponentGroup, error) {
+    newGroup := ComponentGroupCreateData{
+        Name: name,
+        Components: components,
+    }
+
     resp := ComponentGroup{}
-    err := c.doPost(path, group, resp)
+    err := c.doPost("component-groups.json", &newGroup, resp)
     if err != nil {
         return nil, err
     }
     return &resp, nil
-}
-
-// CreateComponentGroup creates a component group with the data contained in a ComponentGroupCreateData struct
-func (c *Client) CreateComponentGroup(group *ComponentGroupCreateData) (*ComponentGroup, error) {
-    return c.doCreateComponentGroup("component-groups.json", group)
 }
 
 func (c *Client) doUpdateComponentGroup(group *ComponentGroup, params fmt.Stringer) (*ComponentGroup, error) {
@@ -131,7 +133,7 @@ func (c *Client) updateComponentGroup(group *ComponentGroup) (*ComponentGroup, e
 }
 
 // UpdateComponentGroup updates a component group. Expects a complete ComponentGroup struct -
-// consider using one of the GetComponentGroup helper functions.
+// consider using one of the GetComponentGroup helper functions and updating the fields.
 func (c *Client) UpdateComponentGroup(group *ComponentGroup) (*ComponentGroup, error) {
     return c.updateComponentGroup(group)
 }

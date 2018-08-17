@@ -140,17 +140,20 @@ func (c *Client) UpdateComponentDesc(comp *Component) (*Component, error) {
 	return c.updateComponent(comp, "description")
 }
 
-func (c *Client) doCreateComponent(path string, comp *ComponentCreateData) (*Component, error) {
+func (c *Client) CreateComponent(name, description, groupID string, showcase bool) (*Component, error) {
+	newComp := &ComponentCreateData{
+		Name: name,
+		Description: description,
+		GroupID: groupID,
+		Showcase: showcase,
+	}
+
 	resp := Component{}
-	err := c.doPost(path, comp, resp)
+	err := c.doPost("components.json", newComp, resp)
 	if err != nil {
 		return nil, err
 	}
 	return &resp, nil
-}
-
-func (c *Client) CreateComponent(comp *ComponentCreateData) (*Component, error) {
-	return c.doCreateComponent("components.json", comp)
 }
 
 // DeleteComponent deletes a component.

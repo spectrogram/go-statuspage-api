@@ -13,6 +13,11 @@ import (
 
 var c *Client
 
+var testComponentName = "StatusPage API Client Test Component (Group)"
+var testComponentDesc = "Component for testing creation of Component Groups"
+
+var testComponentGroupName = "StatusPage API Client Test Component Group"
+
 type Credentials struct {
     ApiKey  string  `json:"apiKey"`
     PageID  string  `json:"pageID"`
@@ -39,41 +44,30 @@ func setup() {
 func TestClient_CreateComponentGroup(t *testing.T) {
     // Component groups must be created with components in them
     // We will create a dummy Component
-    var newComp ComponentCreateData = ComponentCreateData{
-        Name: "StatusPage API Client Test Component (Group)",
-        Description: "Component for testing creation of Component Groups",
-        GroupID: "",
-        Showcase: false,
-    }
-
-    _, err := c.CreateComponent(&newComp)
+    _, err := c.CreateComponent(testComponentName, testComponentDesc, "", false)
     if err != nil {
         t.Errorf("Error creating a new Component for Component Group testing: %s\n", err)
     }
 
-    comp, err := c.GetComponentByName("StatusPage API Client Test Component (Group)")
+    comp, err := c.GetComponentByName(testComponentName)
     if err != nil {
         t.Fatalf("Error getting new Component for Component Group testing: %s\n", err)
     }
 
     // Now create a new ComponentGroup containing the Component we just created
     newCompGroupList := []string{*comp.ID}
-    var newCompGroup ComponentGroupCreateData = ComponentGroupCreateData{
-        Name: "StatusPage API Client Test Component Group",
-        Components: newCompGroupList,
-    }
-    _, err = c.CreateComponentGroup(&newCompGroup)
+    _, err = c.CreateComponentGroup(testComponentGroupName, newCompGroupList)
     if err != nil {
         t.Errorf("Error creating a new Component Group: %s\n", err)
     }
 
-    compGroup, err := c.GetComponentGroupByName("StatusPage API Client Test Component Group")
+    compGroup, err := c.GetComponentGroupByName(testComponentGroupName)
     if err != nil {
         t.Fatalf("Error getting new Component Group: %s\n", err)
     }
 
     // Check that the component group contains what we expect
-    assert.Equal(t, *compGroup.Name, "StatusPage API Client Test Component Group")
+    assert.Equal(t, *compGroup.Name, testComponentGroupName)
     assert.Equal(t, len(compGroup.Components), len(newCompGroupList))
 
     // Check that the component group contains exactly the same components
@@ -88,7 +82,7 @@ func TestClient_CreateComponentGroup(t *testing.T) {
 
 func TestClient_DeleteComponentGroup(t *testing.T) {
     // We'll delete the component group we created earlier
-    compGroup, err := c.GetComponentGroupByName("StatusPage API Client Test Component Group")
+    compGroup, err := c.GetComponentGroupByName(testComponentGroupName)
     if err != nil {
         t.Fatalf("Error getting existing Component Group: %s\n", err)
     }
@@ -99,7 +93,7 @@ func TestClient_DeleteComponentGroup(t *testing.T) {
     }
 
     // Also delete the component we made for the test
-    comp, err := c.GetComponentByName("StatusPage API Client Test Component (Group)")
+    comp, err := c.GetComponentByName(testComponentName)
     if err != nil {
         t.Errorf("Error getting existing Component (from Component Group tests): %s\n", err)
     }
